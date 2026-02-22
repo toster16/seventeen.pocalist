@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEVENTEEN 포카 체커</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fff;--bg2:#f5f5f5;--surface:#efefef;--surface2:#e8e8e8;--border:#d0d0d0;--text:#111;--text2:#666;--text3:#999;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Nanum Gothic',sans-serif;min-height:100vh;}
+
+  header{background:var(--bg);border-bottom:2px solid var(--text);padding:0 20px;position:sticky;top:0;z-index:200;}
+  .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:4px;color:var(--text);display:flex;align-items:baseline;gap:10px;white-space:nowrap;}
+  .logo-sub{font-family:'Nanum Gothic',sans-serif;font-size:0.62rem;font-weight:800;letter-spacing:3px;color:var(--text2);}
+  .header-btns{display:flex;gap:7px;flex-wrap:wrap;}
+
+  .stats-bar{background:var(--text);padding:10px 20px;}
+  .stats-inner{max-width:1200px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+  .stat-item{display:flex;align-items:baseline;gap:5px;font-size:0.76rem;color:rgba(255,255,255,.55);}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;color:#fff;letter-spacing:1px;}
+  .stat-slash{color:rgba(255,255,255,.3);margin:0 1px;}
+  .stat-sub{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:rgba(255,255,255,.45);}
+  .progress-wrap{flex:1;min-width:140px;display:flex;align-items:center;gap:10px;}
+  .progress-bar{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
+  .progress-fill{height:100%;background:#fff;border-radius:2px;transition:width .4s;}
+  .progress-pct{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:#fff;min-width:40px;}
+  .uuid-badge{font-size:0.62rem;color:rgba(255,255,255,.45);margin-left:auto;font-family:monospace;letter-spacing:.5px;cursor:pointer;padding:3px 8px;border:1px solid rgba(255,255,255,.2);border-radius:4px;transition:all .15s;}
+  .uuid-badge:hover{color:#fff;border-color:rgba(255,255,255,.5);}
+
+  .toolbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;}
+  .toolbar-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .search-wrap{position:relative;flex:1;min-width:160px;max-width:260px;}
+  .search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2;pointer-events:none;}
+  .search-input{width:100%;padding:6px 9px 6px 30px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.78rem;font-family:'Nanum Gothic',sans-serif;outline:none;}
+  .search-input:focus{border-color:var(--text);}
+  .search-input::placeholder{color:var(--text3);}
+  .filter-sep{width:1px;height:22px;background:var(--border);}
+  .filter-label{font-size:0.7rem;color:var(--text2);white-space:nowrap;}
+  .filter-group{display:flex;gap:4px;flex-wrap:wrap;}
+  .fbtn{padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:0.71rem;cursor:pointer;transition:all .15s;font-family:'Nanum Gothic',sans-serif;font-weight:700;}
+  .fbtn:hover{border-color:var(--text);color:var(--text);}
+  .fbtn.active{background:var(--text);border-color:var(--text);color:#fff;}
+  .fbtn.danger:hover{background:#111;border-color:#111;color:#fff;}
+
+  .sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#aaa;margin-left:6px;vertical-align:middle;transition:background .3s;}
+  .sync-dot.ok{background:#4caf50;}
+  .sync-dot.err{background:#f44;}
+  .sync-dot.ing{background:#ff9800;animation:pulse .8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .main{max-width:1200px;margin:0 auto;padding:20px;}
+
+  .album-section{margin-bottom:32px;}
+  .album-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--text);flex-wrap:wrap;}
+  .album-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;}
+  .album-badge{font-size:0.63rem;font-weight:800;border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text2);}
+  .album-count{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:1px;color:var(--text2);}
+  .album-count strong{color:var(--text);}
+  .al-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:0.66rem;padding:3px 8px;cursor:pointer;font-family:'Nanum Gothic',sans-serif;font-weight:700;transition:all .15s;}
+  .al-btn:hover{border-color:var(--text);color:var(--text);}
+  .al-btn.del:hover{background:#111;border-color:#111;color:#fff;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+
+  .poca-card{width:100%;aspect-ratio:2/3;border-radius:6px;border:1.5px solid var(--border);position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;user-select:none;cursor:pointer;}
+  .poca-card:hover{border-color:var(--text);box-shadow:0 5px 16px rgba(0,0,0,.1);}
+  .poca-card:active{transform:scale(.97);}
+  .poca-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5px;filter:grayscale(100%) brightness(.8);transition:filter .35s ease;}
+  .poca-card.have .poca-img{filter:none;}
+  .poca-overlay{position:absolute;inset:0;border-radius:5px;background:linear-gradient(to top,rgba(0,0,0,.8) 30%,rgba(0,0,0,.15) 100%);}
+  .poca-card.have .poca-overlay{background:linear-gradient(to top,rgba(0,0,0,.55) 25%,transparent 70%);}
+  .poca-text{position:relative;z-index:1;text-align:center;padding:0 4px 7px;width:100%;}
+  .poca-label{font-size:0.65rem;font-weight:800;line-height:1.3;color:#fff;}
+  .poca-sublabel{font-size:0.54rem;color:rgba(255,255,255,.6);line-height:1.2;margin-top:1px;}
+  .poca-text-only{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:100%;padding:6px;text-align:center;}
+  .poca-text-only .poca-label{color:var(--text);font-size:0.68rem;}
+  .poca-text-only .poca-sublabel{color:var(--text2);}
+  .poca-card.have{border-color:#111;border-width:2px;}
+  .poca-check{position:absolute;top:5px;right:5px;z-index:2;width:18px;height:18px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;}
+  .poca-check svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;}
+  .poca-card.have .poca-check{opacity:1;}
+  .poca-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--text3);}
+
+  .poca-add-card{width:100%;aspect-ratio:2/3;border-radius:6px;border:1.5px dashed var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .2s;background:transparent;color:var(--text3);}
+  .poca-add-card:hover{border-color:var(--text);color:var(--text);background:var(--surface);}
+  .add-icon{font-size:1.6rem;line-height:1;}
+  .add-label{font-size:0.6rem;font-weight:800;letter-spacing:.5px;}
+
+  /* Modals */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border:2px solid #111;border-radius:8px;box-shadow:6px 6px 0 #111;padding:24px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;}
+  .modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:var(--text);margin-bottom:16px;}
+  .modal label{font-size:0.76rem;color:var(--text2);display:block;margin-bottom:4px;font-weight:800;}
+  .modal input[type=text]{width:100%;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.83rem;font-family:'Nanum Gothic',sans-serif;margin-bottom:12px;outline:none;}
+  .modal input[type=text]:focus{border-color:var(--text);}
+  .modal select{width:100%;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.83rem;font-family:'Nanum Gothic',sans-serif;margin-bottom:12px;outline:none;}
+  .modal-btns{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;}
+
+  .photo-upload-box{aspect-ratio:2/3;width:120px;border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .2s;margin:0 auto 12px;position:relative;overflow:hidden;}
+  .photo-upload-box:hover{border-color:var(--text);}
+  .photo-upload-box.has-img{border-color:#111;border-style:solid;}
+  .photo-upload-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;}
+  .photo-upload-box .upload-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:6px;}
+  .photo-upload-box:hover .upload-overlay{opacity:1;}
+  .photo-upload-box .upload-overlay span{color:#fff;font-size:0.72rem;font-weight:800;}
+  .photo-upload-box .upload-hint{font-size:0.68rem;color:var(--text2);text-align:center;padding:0 8px;}
+  .photo-upload-box .upload-icon{font-size:1.6rem;}
+  .photo-clear-btn{display:block;width:100%;text-align:center;font-size:0.72rem;color:var(--text2);cursor:pointer;margin-bottom:12px;background:none;border:none;font-family:'Nanum Gothic',sans-serif;text-decoration:underline;}
+
+  /* UUID 모달 */
+  .uuid-box{background:var(--surface);border:1.5px solid var(--border);border-radius:6px;padding:14px 16px;font-family:monospace;font-size:0.95rem;letter-spacing:1px;text-align:center;margin-bottom:12px;cursor:pointer;transition:border-color .15s;word-break:break-all;}
+  .uuid-box:hover{border-color:var(--text);}
+  .uuid-copy-hint{font-size:0.7rem;color:var(--text3);text-align:center;margin-bottom:16px;}
+  .divider{height:1px;background:var(--border);margin:18px 0;}
+  .section-label{font-size:0.72rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;display:block;}
+
+  .backup-section{margin-bottom:20px;}
+  .backup-section h3{font-size:0.73rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:7px;margin-bottom:10px;}
+  .info-box{font-size:0.78rem;color:var(--text2);line-height:1.9;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;}
+  .info-box strong{color:var(--text);}
+  .last-backup-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:0.78rem;}
+  .last-backup-row span{color:var(--text2);}
+  .last-backup-row strong{color:var(--text);}
+
+  .toast{position:fixed;bottom:20px;right:20px;z-index:900;background:#111;color:#fff;padding:10px 18px;border-radius:6px;font-size:0.78rem;font-weight:700;box-shadow:3px 3px 0 rgba(0,0,0,.15);opacity:0;transform:translateY(6px);transition:opacity .22s,transform .22s;pointer-events:none;display:flex;align-items:center;gap:7px;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .empty{text-align:center;padding:52px;color:var(--text2);font-size:0.88rem;line-height:2.2;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  @media(max-width:600px){.card-grid{gap:5px;}.logo{font-size:1.3rem;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">SVT <span class="logo-sub">POCA CHECKER</span></div>
+    <div class="header-btns">
+      <button class="fbtn" id="btn-add-album">+ 앨범 추가</button>
+      <button class="fbtn" id="btn-uuid-modal">🔑 내 UUID</button>
+      <button class="fbtn" id="btn-backup-modal">🗂 백업</button>
+      <button class="fbtn danger" id="btn-reset">초기화</button>
+    </div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">소장 <span class="stat-num" id="sn-have">0</span><span class="stat-slash">/</span><span class="stat-sub" id="sn-total">0</span></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-pct" id="prog-pct">0%</div>
+    </div>
+    <span class="uuid-badge" id="uuid-badge" title="UUID 클릭해서 복사">UUID: —<span class="sync-dot" id="sync-dot"></span></span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      <input type="text" class="search-input" id="search-input" placeholder="멤버·이름 검색...">
+    </div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">멤버</span>
+    <div class="filter-group" id="member-filters"></div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">상태</span>
+    <div class="filter-group">
+      <button class="fbtn active" data-status="all">전체</button>
+      <button class="fbtn" data-status="have">소장</button>
+      <button class="fbtn" data-status="not">미소장</button>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<!-- Modal: Add Album -->
+<div class="modal-bg" id="modal-album">
+  <div class="modal">
+    <h2>앨범 추가</h2>
+    <label>앨범명 *</label>
+    <input type="text" id="al-name" placeholder="예) Face the Sun">
+    <label>타입</label>
+    <input type="text" id="al-type" placeholder="예) 정규 4집">
+    <div class="modal-btns">
+      <button class="fbtn" id="modal-al-cancel">취소</button>
+      <button class="fbtn active" id="modal-al-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Poca -->
+<div class="modal-bg" id="modal-add-poca">
+  <div class="modal">
+    <h2>포카 추가</h2>
+    <div class="photo-upload-box" id="poca-photo-box">
+      <div class="upload-icon">📷</div>
+      <div class="upload-hint">탭해서 사진 선택<br>(선택사항)</div>
+      <div class="upload-overlay"><span>사진 변경</span></div>
+      <input type="file" id="poca-photo-input" accept="image/*" style="display:none">
+    </div>
+    <button class="photo-clear-btn" id="poca-photo-clear" style="display:none">사진 제거</button>
+    <label>멤버 *</label>
+    <select id="poca-member"></select>
+    <label>이름 / 버전 <span style="font-weight:400;color:var(--text3)">(예: A버전, 팬사인회)</span></label>
+    <input type="text" id="poca-name" placeholder="예) A버전">
+    <div class="modal-btns">
+      <button class="fbtn" id="modal-poca-cancel">취소</button>
+      <button class="fbtn active" id="modal-poca-save">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: UUID -->
+<div class="modal-bg" id="modal-uuid">
+  <div class="modal" style="max-width:440px">
+    <h2>🔑 내 UUID</h2>
+
+    <span class="section-label">내 고유 ID</span>
+    <div class="uuid-box" id="modal-uuid-display">—</div>
+    <p class="uuid-copy-hint">탭해서 복사 · 다른 기기에서 이 ID로 불러올 수 있어요</p>
+
+    <div class="divider"></div>
+
+    <span class="section-label">다른 기기 데이터 불러오기</span>
+    <label>UUID 입력</label>
+    <input type="text" id="import-uuid-input" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:monospace;font-size:0.8rem;">
+    <div style="font-size:0.74rem;color:var(--text2);margin-top:-8px;margin-bottom:12px;">⚠️ 현재 기기의 데이터가 불러온 데이터로 교체돼요.<br>사진은 기기별로 저장되어 불러와지지 않아요.</div>
+
+    <div class="modal-btns">
+      <button class="fbtn" id="uuid-modal-close">닫기</button>
+      <button class="fbtn active" id="btn-import-uuid">불러오기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Backup -->
+<div class="modal-bg" id="modal-backup">
+  <div class="modal" style="max-width:460px">
+    <h2>🗂 백업 & 복원</h2>
+    <div class="backup-section">
+      <h3>자동 백업</h3>
+      <div class="info-box">앱을 <strong>열 때마다</strong> JSON 파일로 자동 다운로드됩니다.<br>파일명: <strong>svt-poca-YYYYMMDD-HHmm.json</strong><br>⚠️ 사진은 기기에 저장되어 JSON에 포함되지 않아요.</div>
+    </div>
+    <div class="backup-section">
+      <h3>마지막 백업</h3>
+      <div class="last-backup-row"><span>이번 세션</span><strong id="last-backup-label">—</strong></div>
+      <button class="fbtn active" id="btn-manual-export" style="width:100%;display:flex;justify-content:center">⬇ 지금 JSON 다운로드</button>
+    </div>
+    <div class="backup-section">
+      <h3>복원</h3>
+      <label class="fbtn" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin:0">
+        ⬆ JSON 파일로 복원
+        <input type="file" id="import-file" accept=".json" style="display:none">
+      </label>
+    </div>
+    <div class="modal-btns"><button class="fbtn" id="backup-close">닫기</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+// ═══════════════════════════════════════════════
+//  🔧 여기에 Firebase 설정을 붙여넣으세요
+// ═══════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "여기에_붙여넣기",
+  authDomain:        "여기에_붙여넣기",
+  databaseURL:       "여기에_붙여넣기",
+  projectId:         "여기에_붙여넣기",
+  storageBucket:     "여기에_붙여넣기",
+  messagingSenderId: "여기에_붙여넣기",
+  appId:             "여기에_붙여넣기"
+};
+// ═══════════════════════════════════════════════
+
+// Firebase 초기화
+let fbApp, fbDb;
+try {
+  fbApp = initializeApp(FIREBASE_CONFIG);
+  fbDb  = getDatabase(fbApp);
+} catch(e) {
+  console.warn('Firebase 미설정 — 오프라인 모드로 실행');
+}
+
+// ─────────────────────────────────────────────
+//  IndexedDB (사진 전용)
+// ─────────────────────────────────────────────
+const DB_NAME='svt-photos', DB_VER=1, STORE='photos';
+let idb=null;
+function openIDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,DB_VER);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore(STORE);
+    r.onsuccess=e=>{idb=e.target.result;res();};
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+function idbPut(k,v){return new Promise((res,rej)=>{const tx=idb.transaction(STORE,'readwrite');const r=tx.objectStore(STORE).put(v,k);r.onsuccess=()=>res();r.onerror=e=>rej(e);});}
+function idbGet(k){return new Promise((res,rej)=>{const tx=idb.transaction(STORE,'readonly');const r=tx.objectStore(STORE).get(k);r.onsuccess=e=>res(e.target.result||null);r.onerror=e=>rej(e);});}
+function idbDel(k){return new Promise((res,rej)=>{const tx=idb.transaction(STORE,'readwrite');const r=tx.objectStore(STORE).delete(k);r.onsuccess=()=>res();r.onerror=e=>rej(e);});}
+function idbClear(){return new Promise((res,rej)=>{const tx=idb.transaction(STORE,'readwrite');const r=tx.objectStore(STORE).clear();r.onsuccess=()=>res();r.onerror=e=>rej(e);});}
+
+// ─────────────────────────────────────────────
+//  localStorage (텍스트만)
+// ─────────────────────────────────────────────
+const K_ALBUMS='svt_al_v7', K_POCAS='svt_pc_v7', K_UUID='svt_uuid';
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{showToast('⚠','저장 오류');}}
+
+let albums=lsGet(K_ALBUMS,[]);
+let pocas =lsGet(K_POCAS,{}); // {id:{alId,member,name,status,hasPhoto}}
+
+// ─────────────────────────────────────────────
+//  UUID
+// ─────────────────────────────────────────────
+function genUUID(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r=Math.random()*16|0;
+    return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
+}
+let myUUID = lsGet(K_UUID, null);
+if(!myUUID){ myUUID = genUUID(); lsSet(K_UUID, myUUID); }
+
+function updateUUIDBadge(){
+  const el = document.getElementById('uuid-badge');
+  if(el) el.innerHTML = `ID: ${myUUID.slice(0,8)}…<span class="sync-dot" id="sync-dot"></span>`;
+  const md = document.getElementById('modal-uuid-display');
+  if(md) md.textContent = myUUID;
+}
+
+// ─────────────────────────────────────────────
+//  Firebase 동기화
+// ─────────────────────────────────────────────
+function setSyncDot(state){ // 'ok'|'err'|'ing'
+  const d=document.getElementById('sync-dot');
+  if(d){d.className='sync-dot '+state;}
+}
+
+// Firebase에 현재 데이터 저장
+async function syncToFirebase(){
+  if(!fbDb) return;
+  setSyncDot('ing');
+  try {
+    await set(ref(fbDb,`users/${myUUID}`),{
+      albums,
+      pocas,
+      updatedAt: Date.now()
+    });
+    setSyncDot('ok');
+  } catch(e){
+    console.error(e);
+    setSyncDot('err');
+  }
+}
+
+// Firebase에서 특정 UUID 데이터 불러오기
+async function loadFromFirebase(uuid){
+  if(!fbDb){ showToast('⚠','Firebase가 설정되지 않았어요'); return false; }
+  setSyncDot('ing');
+  try{
+    const snap = await get(ref(fbDb,`users/${uuid}`));
+    if(!snap.exists()){ showToast('⚠','해당 UUID의 데이터가 없어요'); setSyncDot('err'); return false; }
+    const data = snap.val();
+    albums = data.albums || [];
+    pocas  = data.pocas  || {};
+    // 사진은 이 기기에 없으므로 hasPhoto 초기화
+    Object.values(pocas).forEach(p=>p.hasPhoto=false);
+    lsSet(K_ALBUMS,albums); lsSet(K_POCAS,pocas);
+    urlCache.clear();
+    renderAll();
+    setSyncDot('ok');
+    return true;
+  }catch(e){
+    console.error(e);
+    setSyncDot('err');
+    showToast('⚠','불러오기 실패: '+e.message);
+    return false;
+  }
+}
+
+// 실시간 리스너 — 다른 기기에서 바꾸면 자동 반영
+function startRealtimeSync(){
+  if(!fbDb) return;
+  onValue(ref(fbDb,`users/${myUUID}`), snap=>{
+    if(!snap.exists()) return;
+    const data = snap.val();
+    // 내가 방금 저장한 것과 다를 때만 반영 (타임스탬프 비교)
+    const remote = data.updatedAt || 0;
+    if(remote > lastSyncTime + 2000){ // 2초 여유
+      albums = data.albums || [];
+      pocas  = data.pocas  || {};
+      lsSet(K_ALBUMS,albums); lsSet(K_POCAS,pocas);
+      renderAll();
+      showToast('🔄','다른 기기에서 동기화됨');
+    }
+  });
+}
+let lastSyncTime = 0;
+
+// 데이터 변경 시 자동 sync (디바운스 1.5초)
+let syncTimer=null;
+function scheduleSync(){
+  lastSyncTime = Date.now();
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(syncToFirebase, 1500);
+}
+
+// ─────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────
+const MEMBERS=['에스쿱스','정한','조슈아','준','호시','원우','우지','디에잇','민규','도겸','승관','버논','디노'];
+function genId(){return 'p'+Date.now()+Math.random().toString(36).slice(2,6);}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;}
+function fileStamp(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;}
+function pocasOfAlbum(alId){return Object.entries(pocas).filter(([,p])=>p.alId===alId).map(([id,p])=>({id,...p}));}
+function countHave(){return Object.values(pocas).filter(p=>p.status==='have').length;}
+function countTotal(){return Object.keys(pocas).length;}
+
+// 이미지 리사이즈 → Blob
+function resizeToBlob(file,maxW=800,q=0.82){
+  return new Promise(res=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const scale=Math.min(1,maxW/img.width);
+      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      const c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(blob=>res(blob),'image/jpeg',q);
+    };
+    img.src=url;
+  });
+}
+
+const urlCache=new Map();
+async function getPhotoURL(id){
+  if(urlCache.has(id)) return urlCache.get(id);
+  const blob=await idbGet(id);
+  if(!blob) return null;
+  const url=URL.createObjectURL(blob);
+  urlCache.set(id,url);
+  return url;
+}
+function freeURL(id){if(urlCache.has(id)){URL.revokeObjectURL(urlCache.get(id));urlCache.delete(id);}}
+
+// ─────────────────────────────────────────────
+//  FILTERS
+// ─────────────────────────────────────────────
+let filterMember='all',filterStatus='all',filterSearch='';
+
+// ─────────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────────
+function renderAll(){renderMemberFilters();renderMain();updateStats();}
+
+function renderMemberFilters(){
+  const wrap=document.getElementById('member-filters');
+  wrap.innerHTML='';
+  const mk=(label,val)=>{
+    const b=document.createElement('button');
+    b.className='fbtn'+(filterMember===val?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{filterMember=val;renderAll();};
+    wrap.appendChild(b);
+  };
+  mk('전체','all');
+  MEMBERS.forEach(m=>mk(m,m));
+}
+
+function pocaVisible(p){
+  if(filterMember!=='all'&&p.member!==filterMember) return false;
+  if(filterStatus==='have'&&p.status!=='have') return false;
+  if(filterStatus==='not'&&p.status!=='not') return false;
+  if(filterSearch){
+    const q=filterSearch.toLowerCase();
+    if(!p.member.toLowerCase().includes(q)&&!(p.name||'').toLowerCase().includes(q)) return false;
+  }
+  return true;
+}
+
+function renderMain(){
+  const main=document.getElementById('main');
+  main.innerHTML='';
+  if(!albums.length){
+    main.innerHTML='<div class="empty">아직 앨범이 없어요!<br><strong>+ 앨범 추가</strong>로 시작해 보세요 🎴</div>';
+    return;
+  }
+  albums.forEach(al=>{
+    const allAl=pocasOfAlbum(al.id);
+    const visible=allAl.filter(p=>pocaVisible(p));
+    const haveCount=allAl.filter(p=>p.status==='have').length;
+    const sec=document.createElement('div');
+    sec.className='album-section';
+    sec.innerHTML=`
+      <div class="album-header">
+        <div class="album-title">${escHtml(al.name)}</div>
+        ${al.type?`<div class="album-badge">${escHtml(al.type)}</div>`:''}
+        <div class="album-count"><strong>${haveCount}</strong> / ${allAl.length}</div>
+        <button class="al-btn del">앨범 삭제</button>
+      </div>
+      <div class="card-grid" id="grid-${al.id}"></div>
+    `;
+    main.appendChild(sec);
+    sec.querySelector('.del').onclick=()=>deleteAlbum(al.id);
+    const grid=sec.querySelector(`#grid-${al.id}`);
+    visible.forEach(p=>grid.appendChild(buildCard(p)));
+    if(filterStatus!=='have'){
+      const add=document.createElement('div');
+      add.className='poca-add-card';
+      add.innerHTML=`<div class="add-icon">+</div><div class="add-label">포카 추가</div>`;
+      add.onclick=()=>openAddPocaModal(al.id);
+      grid.appendChild(add);
+    }
+  });
+}
+
+function buildCard(p){
+  const card=document.createElement('div');
+  card.className='poca-card'+(p.status==='have'?' have':'');
+  const checkSvg=`<div class="poca-check"><svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 7"/></svg></div>`;
+  const textHtml=`<div class="poca-label">${escHtml(p.member)}</div>${p.name?`<div class="poca-sublabel">${escHtml(p.name)}</div>`:''}`;
+
+  if(p.hasPhoto){
+    card.innerHTML=`<div class="poca-placeholder">🖼</div><div class="poca-overlay"></div><div class="poca-text">${textHtml}</div>${checkSvg}`;
+    getPhotoURL(p.id).then(url=>{
+      if(!url||!card.isConnected) return;
+      const img=document.createElement('img');
+      img.className='poca-img';img.src=url;img.alt='';img.loading='lazy';
+      card.querySelector('.poca-placeholder')?.replaceWith(img);
+    });
+  } else {
+    card.innerHTML=`<div class="poca-text-only">${textHtml}</div>${checkSvg}`;
+  }
+
+  let timer=null,didLong=false;
+  const startPress=()=>{didLong=false;timer=setTimeout(()=>{didLong=true;doDelete(p);},650);};
+  const cancelPress=()=>clearTimeout(timer);
+  const handleClick=()=>{
+    if(didLong) return;
+    pocas[p.id].status=pocas[p.id].status==='have'?'not':'have';
+    lsSet(K_POCAS,pocas);
+    card.classList.toggle('have',pocas[p.id].status==='have');
+    updateStats();
+    scheduleSync();
+    if(filterStatus!=='all') renderMain();
+  };
+  card.addEventListener('mousedown',startPress);
+  card.addEventListener('touchstart',startPress,{passive:true});
+  card.addEventListener('mouseup',cancelPress);
+  card.addEventListener('touchend',cancelPress);
+  card.addEventListener('mouseleave',cancelPress);
+  card.addEventListener('click',handleClick);
+  return card;
+}
+
+async function doDelete(p){
+  if(!confirm(`"${p.member}${p.name?' · '+p.name:''}" 포카를 삭제할까요?`)) return;
+  if(p.hasPhoto){await idbDel(p.id);freeURL(p.id);}
+  delete pocas[p.id];
+  lsSet(K_POCAS,pocas);
+  renderAll();
+  scheduleSync();
+}
+
+function updateStats(){
+  const have=countHave(),total=countTotal();
+  document.getElementById('sn-have').textContent=have;
+  document.getElementById('sn-total').textContent=total;
+  const pct=total>0?Math.round(have/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  albums.forEach(al=>{
+    const all=pocasOfAlbum(al.id);
+    const hv=all.filter(p=>p.status==='have').length;
+    const el=document.querySelector(`#grid-${al.id}`)?.closest('.album-section')?.querySelector('.album-count');
+    if(el) el.innerHTML=`<strong>${hv}</strong> / ${all.length}`;
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Filters UI
+// ─────────────────────────────────────────────
+document.querySelectorAll('[data-status]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    filterStatus=btn.dataset.status;
+    document.querySelectorAll('[data-status]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');renderMain();
+  });
+});
+document.getElementById('search-input').addEventListener('input',e=>{filterSearch=e.target.value.trim();renderMain();});
+
+// ─────────────────────────────────────────────
+//  UUID 모달
+// ─────────────────────────────────────────────
+document.getElementById('btn-uuid-modal').onclick=()=>{
+  document.getElementById('modal-uuid-display').textContent=myUUID;
+  document.getElementById('import-uuid-input').value='';
+  document.getElementById('modal-uuid').classList.add('show');
+};
+document.getElementById('uuid-modal-close').onclick=()=>document.getElementById('modal-uuid').classList.remove('show');
+document.getElementById('modal-uuid').addEventListener('click',e=>{if(e.target===document.getElementById('modal-uuid'))document.getElementById('modal-uuid').classList.remove('show');});
+
+// UUID 복사
+document.getElementById('modal-uuid-display').addEventListener('click',()=>{
+  navigator.clipboard?.writeText(myUUID).then(()=>showToast('📋','UUID 복사됨!')).catch(()=>{});
+});
+document.getElementById('uuid-badge').addEventListener('click',()=>{
+  navigator.clipboard?.writeText(myUUID).then(()=>showToast('📋','UUID 복사됨!')).catch(()=>{});
+});
+
+// 다른 기기 데이터 불러오기
+document.getElementById('btn-import-uuid').onclick=async()=>{
+  const uuid=document.getElementById('import-uuid-input').value.trim();
+  if(!uuid){ showToast('⚠','UUID를 입력해 주세요'); return; }
+  if(uuid===myUUID){ showToast('⚠','내 UUID예요!'); return; }
+  const uuidRe=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if(!uuidRe.test(uuid)){ showToast('⚠','올바른 UUID 형식이 아니에요'); return; }
+  if(!confirm('현재 데이터를 불러온 데이터로 교체할까요?')) return;
+  const ok=await loadFromFirebase(uuid);
+  if(ok){
+    document.getElementById('modal-uuid').classList.remove('show');
+    showToast('✅','데이터를 불러왔어요!');
+  }
+};
+
+// ─────────────────────────────────────────────
+//  Add Album
+// ─────────────────────────────────────────────
+document.getElementById('btn-add-album').onclick=()=>{
+  document.getElementById('al-name').value='';
+  document.getElementById('al-type').value='';
+  document.getElementById('modal-album').classList.add('show');
+  setTimeout(()=>document.getElementById('al-name').focus(),80);
+};
+document.getElementById('modal-al-cancel').onclick=()=>document.getElementById('modal-album').classList.remove('show');
+document.getElementById('modal-al-save').onclick=()=>{
+  const name=document.getElementById('al-name').value.trim();
+  const type=document.getElementById('al-type').value.trim();
+  if(!name){alert('앨범명을 입력해 주세요');return;}
+  albums.push({id:'al'+Date.now(),name,type});
+  lsSet(K_ALBUMS,albums);
+  document.getElementById('modal-album').classList.remove('show');
+  renderAll();scheduleSync();
+};
+document.getElementById('modal-album').addEventListener('click',e=>{if(e.target===document.getElementById('modal-album'))document.getElementById('modal-album').classList.remove('show');});
+
+function deleteAlbum(id){
+  if(!confirm('이 앨범을 삭제할까요?\n(등록된 포카와 사진도 모두 삭제됩니다)'))return;
+  const ids=Object.keys(pocas).filter(pid=>pocas[pid].alId===id);
+  Promise.all(ids.map(pid=>{freeURL(pid);return idbDel(pid);})).then(()=>{
+    ids.forEach(pid=>delete pocas[pid]);
+    albums=albums.filter(a=>a.id!==id);
+    lsSet(K_ALBUMS,albums);lsSet(K_POCAS,pocas);
+    renderAll();scheduleSync();
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Add Poca Modal
+// ─────────────────────────────────────────────
+let addPocaAlId=null,addPocaBlob=null;
+function openAddPocaModal(alId){
+  addPocaAlId=alId;addPocaBlob=null;
+  const sel=document.getElementById('poca-member');
+  sel.innerHTML='';
+  MEMBERS.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+  document.getElementById('poca-name').value='';
+  resetPhotoBox();
+  document.getElementById('modal-add-poca').classList.add('show');
+  setTimeout(()=>document.getElementById('poca-name').focus(),80);
+}
+function resetPhotoBox(){
+  addPocaBlob=null;
+  const box=document.getElementById('poca-photo-box');
+  box.classList.remove('has-img');box.querySelector('img')?.remove();
+  box.querySelector('.upload-icon').style.display='';
+  box.querySelector('.upload-hint').style.display='';
+  document.getElementById('poca-photo-clear').style.display='none';
+}
+document.getElementById('poca-photo-box').addEventListener('click',()=>document.getElementById('poca-photo-input').click());
+document.getElementById('poca-photo-input').addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;
+  addPocaBlob=await resizeToBlob(file);
+  const url=URL.createObjectURL(addPocaBlob);
+  const box=document.getElementById('poca-photo-box');
+  box.classList.add('has-img');
+  let img=box.querySelector('img');
+  if(!img){img=document.createElement('img');box.prepend(img);}
+  img.src=url;
+  box.querySelector('.upload-icon').style.display='none';
+  box.querySelector('.upload-hint').style.display='none';
+  document.getElementById('poca-photo-clear').style.display='block';
+  e.target.value='';
+});
+document.getElementById('poca-photo-clear').onclick=resetPhotoBox;
+document.getElementById('modal-poca-cancel').onclick=()=>document.getElementById('modal-add-poca').classList.remove('show');
+document.getElementById('modal-add-poca').addEventListener('click',e=>{if(e.target===document.getElementById('modal-add-poca'))document.getElementById('modal-add-poca').classList.remove('show');});
+document.getElementById('modal-poca-save').onclick=async()=>{
+  const member=document.getElementById('poca-member').value;
+  const name=document.getElementById('poca-name').value.trim();
+  const id=genId();
+  if(addPocaBlob) await idbPut(id,addPocaBlob);
+  pocas[id]={alId:addPocaAlId,member,name,status:'not',hasPhoto:!!addPocaBlob};
+  lsSet(K_POCAS,pocas);
+  document.getElementById('modal-add-poca').classList.remove('show');
+  renderAll();scheduleSync();
+  showToast('✓','포카 추가됨');
+};
+
+// ─────────────────────────────────────────────
+//  Backup
+// ─────────────────────────────────────────────
+let lastBackupLabel='—';
+function exportJSON(silent=false){
+  if(!albums.length&&!Object.keys(pocas).length)return;
+  const now=new Date();
+  const blob=new Blob([JSON.stringify({albums,pocas,uuid:myUUID,exportedAt:now.toISOString()},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`svt-poca-${fileStamp(now)}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  lastBackupLabel=fmtDate(now);
+  const el=document.getElementById('last-backup-label');if(el)el.textContent=lastBackupLabel;
+  if(!silent)showToast('⬇','JSON 백업 완료');
+}
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.albums){showToast('⚠','올바른 파일이 아닙니다');return;}
+      if(!confirm('이 파일로 복원할까요?\n현재 데이터를 먼저 백업합니다.\n(사진은 복원되지 않아요)'))return;
+      exportJSON(true);
+      albums=data.albums||[];pocas=data.pocas||{};
+      Object.values(pocas).forEach(p=>p.hasPhoto=false);
+      lsSet(K_ALBUMS,albums);lsSet(K_POCAS,pocas);
+      urlCache.clear();renderAll();scheduleSync();
+      document.getElementById('modal-backup').classList.remove('show');
+      showToast('✓','복원 완료');
+    }catch(err){showToast('⚠','파일 오류: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+document.getElementById('btn-backup-modal').onclick=()=>{document.getElementById('last-backup-label').textContent=lastBackupLabel;document.getElementById('modal-backup').classList.add('show');};
+document.getElementById('backup-close').onclick=()=>document.getElementById('modal-backup').classList.remove('show');
+document.getElementById('modal-backup').addEventListener('click',e=>{if(e.target===document.getElementById('modal-backup'))document.getElementById('modal-backup').classList.remove('show');});
+document.getElementById('btn-manual-export').onclick=()=>exportJSON(false);
+document.getElementById('import-file').addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;importJSON(file);e.target.value='';});
+
+// ─────────────────────────────────────────────
+//  Reset
+// ─────────────────────────────────────────────
+document.getElementById('btn-reset').onclick=()=>{
+  if(!confirm('모든 포카 정보를 초기화할까요?\n(앨범 목록은 유지됩니다)'))return;
+  idbClear().then(()=>{urlCache.clear();pocas={};lsSet(K_POCAS,pocas);renderAll();scheduleSync();showToast('✓','초기화 완료');});
+};
+
+// ─────────────────────────────────────────────
+//  Toast
+// ─────────────────────────────────────────────
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ─────────────────────────────────────────────
+//  Init
+// ─────────────────────────────────────────────
+await openIDB();
+updateUUIDBadge();
+renderAll();
+syncToFirebase(); // 초기 업로드
+startRealtimeSync(); // 실시간 리스너
+setTimeout(()=>exportJSON(true),1000);
+
+</script>
+</body>
+</html>
