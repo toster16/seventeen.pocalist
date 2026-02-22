@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEVENTEEN 포카 체커</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#fff;--bg2:#f5f5f5;--surface:#efefef;--surface2:#e8e8e8;--border:#d0d0d0;--text:#111;--text2:#666;--text3:#999;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Nanum Gothic',sans-serif;min-height:100vh;}
+
+  /* Header */
+  header{background:var(--bg);border-bottom:2px solid var(--text);padding:0 20px;position:sticky;top:0;z-index:200;}
+  .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:4px;color:var(--text);display:flex;align-items:baseline;gap:10px;white-space:nowrap;}
+  .logo-sub{font-family:'Nanum Gothic',sans-serif;font-size:0.62rem;font-weight:800;letter-spacing:3px;color:var(--text2);}
+  .header-btns{display:flex;gap:7px;flex-wrap:wrap;}
+
+  /* Stats */
+  .stats-bar{background:var(--text);padding:10px 20px;}
+  .stats-inner{max-width:1200px;margin:0 auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+  .stat-item{display:flex;align-items:baseline;gap:5px;font-size:0.76rem;color:rgba(255,255,255,.55);}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;color:#fff;letter-spacing:1px;}
+  .stat-slash{color:rgba(255,255,255,.3);margin:0 1px;}
+  .stat-sub{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:rgba(255,255,255,.45);}
+  .progress-wrap{flex:1;min-width:140px;display:flex;align-items:center;gap:10px;}
+  .progress-bar{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
+  .progress-fill{height:100%;background:#fff;border-radius:2px;transition:width .4s;}
+  .progress-pct{font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:#fff;min-width:40px;}
+
+  /* Toolbar */
+  .toolbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;}
+  .toolbar-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .search-wrap{position:relative;flex:1;min-width:160px;max-width:260px;}
+  .search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--text3);fill:none;stroke-width:2;pointer-events:none;}
+  .search-input{width:100%;padding:6px 9px 6px 30px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:0.78rem;font-family:'Nanum Gothic',sans-serif;outline:none;}
+  .search-input:focus{border-color:var(--text);}
+  .search-input::placeholder{color:var(--text3);}
+  .filter-sep{width:1px;height:22px;background:var(--border);}
+  .filter-label{font-size:0.7rem;color:var(--text2);white-space:nowrap;}
+  .filter-group{display:flex;gap:4px;flex-wrap:wrap;}
+  .fbtn{padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:0.71rem;cursor:pointer;transition:all .15s;font-family:'Nanum Gothic',sans-serif;font-weight:700;}
+  .fbtn:hover{border-color:var(--text);color:var(--text);}
+  .fbtn.active{background:var(--text);border-color:var(--text);color:#fff;}
+  .fbtn.danger:hover{background:#111;border-color:#111;color:#fff;}
+
+  /* Main */
+  .main{max-width:1200px;margin:0 auto;padding:20px;}
+
+  /* Album section */
+  .album-section{margin-bottom:32px;}
+  .album-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--text);flex-wrap:wrap;}
+  .album-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;}
+  .album-badge{font-size:0.63rem;font-weight:800;border:1px solid var(--border);padding:2px 7px;border-radius:3px;color:var(--text2);}
+  .album-count{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:1px;color:var(--text2);}
+  .album-count strong{color:var(--text);}
+  .al-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text2);font-size:0.66rem;padding:3px 8px;cursor:pointer;font-family:'Nanum Gothic',sans-serif;font-weight:700;transition:all .15s;}
+  .al-btn:hover{border-color:var(--text);color:var(--text);}
+  .al-btn.del:hover{background:#111;border-color:#111;color:#fff;}
+
+  /* Member row */
+  .member-row{margin-bottom:16px;}
+  .member-row-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .member-name{font-size:0.78rem;font-weight:800;color:var(--text);}
+  .member-poca-count{font-size:0.68rem;color:var(--text2);}
+
+  /* Card grid */
+  .card-grid{display:flex;flex-wrap:wrap;gap:8px;}
+
+  /* Poca card */
+  .poca-card{width:100px;aspect-ratio:2/3;border-radius:6px;border:1.5px solid var(--border);position:relative;overflow:hidden;transition:all .2s;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;user-select:none;cursor:pointer;flex-shrink:0;}
+  .poca-card:hover{transform:translateY(-3px);border-color:var(--text);box-shadow:0 5px 16px rgba(0,0,0,.1);}
+  .poca-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:5px;filter:grayscale(100%) brightness(.85);transition:filter .35s;}
+  .poca-card.have .poca-img{filter:none;}
+  .poca-card.have{border-color:#111;background:#f0f0f0;}
+  .poca-overlay{position:absolute;inset:0;border-radius:5px;background:linear-gradient(to top,rgba(0,0,0,.78) 35%,transparent 70%);}
+  .poca-card:not(.have) .poca-overlay{background:linear-gradient(to top,rgba(0,0,0,.84) 35%,rgba(0,0,0,.22) 100%);}
+  .poca-text{position:relative;z-index:1;text-align:center;padding:0 4px 6px;width:100%;}
+  .poca-label{font-size:0.64rem;font-weight:800;line-height:1.3;color:#fff;}
+  .poca-sublabel{font-size:0.54rem;color:rgba(255,255,255,.6);line-height:1.2;margin-top:1px;}
+  .poca-text-only{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:100%;padding:6px;text-align:center;}
+  .poca-text-only .poca-label{color:var(--text);font-size:0.68rem;}
+  .poca-text-only .poca-sublabel{color:var(--text2);}
+  .poca-check{position:absolute;top:5px;right:5px;z-index:2;width:18px;height:18px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
+  .poca-check svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;}
+  .poca-card.have .poca-check{opacity:1;}
+
+  /* + 추가 카드 */
+  .poca-add-card{width:100px;aspect-ratio:2/3;border-radius:6px;border:1.5px dashed var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:all .2s;background:transparent;color:var(--text3);flex-shrink:0;}
+  .poca-add-card:hover{border-color:var(--text);color:var(--text);background:var(--surface);}
+  .add-icon{font-size:1.4rem;line-height:1;}
+  .add-label{font-size:0.6rem;font-weight:800;letter-spacing:.5px;}
+
+  /* Context menu */
+  .ctx-menu{position:fixed;background:#fff;border:1.5px solid #111;border-radius:6px;overflow:hidden;z-index:600;min-width:160px;box-shadow:4px 4px 0 #111;display:none;}
+  .ctx-menu.show{display:block;animation:popIn .12s ease;}
+  @keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  .ctx-title{padding:9px 14px 7px;font-size:0.7rem;color:var(--text2);border-bottom:1px solid var(--border);font-weight:800;}
+  .ctx-item{padding:10px 14px;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:8px;transition:background .1s;}
+  .ctx-item:hover{background:var(--surface);}
+  .ctx-item.cur{font-weight:800;background:var(--surface2);}
+  .ctx-item.danger{color:#c00;}
+  .ctx-item.danger:hover{background:#fff0f0;}
+  .ctx-sep{height:1px;background:var(--border);}
+
+  /* Modals */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border:2px solid #111;border-radius:8px;box-shadow:6px 6px 0 #111;padding:24px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;}
+  .modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:var(--text);margin-bottom:16px;}
+  .modal label{font-size:0.76rem;color:var(--text2);display:block;margin-bottom:4px;font-weight:800;}
+  .modal input[type=text]{width:100%;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.83rem;font-family:'Nanum Gothic',sans-serif;margin-bottom:12px;outline:none;}
+  .modal input[type=text]:focus{border-color:var(--text);}
+  .modal select{width:100%;padding:8px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:0.83rem;font-family:'Nanum Gothic',sans-serif;margin-bottom:12px;outline:none;}
+  .modal-btns{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;}
+  .tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+  .tag{padding:3px 9px;border:1px solid var(--border);border-radius:3px;font-size:0.73rem;color:var(--text2);display:flex;align-items:center;gap:4px;background:var(--surface);}
+  .tag button{background:none;border:none;color:var(--text);cursor:pointer;font-size:0.95rem;line-height:1;}
+
+  /* 사진 업로드 박스 */
+  .photo-upload-box{aspect-ratio:2/3;width:120px;border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all .2s;margin:0 auto 16px;position:relative;overflow:hidden;}
+  .photo-upload-box:hover{border-color:var(--text);}
+  .photo-upload-box.has-img{border-color:#111;border-style:solid;}
+  .photo-upload-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;}
+  .photo-upload-box .upload-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;border-radius:6px;}
+  .photo-upload-box:hover .upload-overlay{opacity:1;}
+  .photo-upload-box .upload-overlay span{color:#fff;font-size:0.72rem;font-weight:800;}
+  .photo-upload-box .upload-hint{font-size:0.68rem;color:var(--text2);text-align:center;padding:0 8px;}
+  .photo-upload-box .upload-icon{font-size:1.6rem;}
+  .photo-clear-btn{display:block;width:100%;text-align:center;font-size:0.72rem;color:var(--text2);cursor:pointer;margin-bottom:12px;text-decoration:underline;}
+  .photo-clear-btn:hover{color:var(--text);}
+
+  /* Backup */
+  .backup-section{margin-bottom:20px;}
+  .backup-section h3{font-size:0.73rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:7px;margin-bottom:10px;}
+  .info-box{font-size:0.78rem;color:var(--text2);line-height:1.9;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:0;}
+  .info-box strong{color:var(--text);}
+  .last-backup-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;font-size:0.78rem;}
+  .last-backup-row span{color:var(--text2);}
+  .last-backup-row strong{color:var(--text);}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;z-index:900;background:#111;color:#fff;padding:10px 18px;border-radius:6px;font-size:0.78rem;font-weight:700;box-shadow:3px 3px 0 rgba(0,0,0,.15);opacity:0;transform:translateY(6px);transition:opacity .22s,transform .22s;pointer-events:none;display:flex;align-items:center;gap:7px;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .empty{text-align:center;padding:52px;color:var(--text2);font-size:0.88rem;line-height:2.2;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  @media(max-width:600px){
+    .poca-card,.poca-add-card{width:82px;}
+    .logo{font-size:1.3rem;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">SVT <span class="logo-sub">POCA CHECKER</span></div>
+    <div class="header-btns">
+      <button class="fbtn" id="btn-add-album">+ 앨범 추가</button>
+      <button class="fbtn" id="btn-backup-modal">🗂 백업</button>
+      <button class="fbtn danger" id="btn-reset">초기화</button>
+    </div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">소장 <span class="stat-num" id="sn-have">0</span><span class="stat-slash">/</span><span class="stat-sub" id="sn-total">0</span></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-pct" id="prog-pct">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      <input type="text" class="search-input" id="search-input" placeholder="멤버·이름 검색...">
+    </div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">멤버</span>
+    <div class="filter-group" id="member-filters"></div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">상태</span>
+    <div class="filter-group">
+      <button class="fbtn active" data-status="all">전체</button>
+      <button class="fbtn" data-status="have">소장</button>
+      <button class="fbtn" data-status="not">미소장</button>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<!-- Context menu -->
+  <div class="ctx-item" data-action="have">✓ 소장</div>
+  <div class="ctx-item" data-action="not">✕ 미소장</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" id="ctx-delete">🗑 이 포카 삭제</div>
+</div>
+
+<!-- Modal: Add Album -->
+<div class="modal-bg" id="modal-album">
+  <div class="modal">
+    <h2>앨범 추가</h2>
+    <label>앨범명 *</label>
+    <input type="text" id="al-name" placeholder="예) Face the Sun">
+    <label>타입</label>
+    <input type="text" id="al-type" placeholder="예) 정규 4집">
+    <div class="modal-btns">
+      <button class="fbtn" id="modal-al-cancel">취소</button>
+      <button class="fbtn active" id="modal-al-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Poca -->
+<div class="modal-bg" id="modal-add-poca">
+  <div class="modal">
+    <h2>포카 추가</h2>
+
+    <!-- 사진 업로드 -->
+    <div class="photo-upload-box" id="poca-photo-box">
+      <div class="upload-icon">📷</div>
+      <div class="upload-hint">탭해서 사진 선택<br>(선택사항)</div>
+      <div class="upload-overlay"><span>사진 변경</span></div>
+      <input type="file" id="poca-photo-input" accept="image/*" style="display:none">
+    </div>
+    <span class="photo-clear-btn" id="poca-photo-clear" style="display:none">사진 제거</span>
+
+    <label>멤버 *</label>
+    <select id="poca-member"></select>
+
+    <label>이름 / 버전 <span style="font-weight:400;color:var(--text3)">(예: A버전, 팬사인회)</span></label>
+    <input type="text" id="poca-name" placeholder="예) A버전">
+
+    <div class="modal-btns">
+      <button class="fbtn" id="modal-poca-cancel">취소</button>
+      <button class="fbtn active" id="modal-poca-save">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Backup -->
+<div class="modal-bg" id="modal-backup">
+  <div class="modal" style="max-width:460px">
+    <h2>🗂 백업 & 복원</h2>
+    <div class="backup-section">
+      <h3>자동 백업</h3>
+      <div class="info-box">앱을 <strong>열 때마다</strong> JSON 파일로 자동 다운로드됩니다.<br>파일명: <strong>svt-poca-YYYYMMDD-HHmm.json</strong></div>
+    </div>
+    <div class="backup-section">
+      <h3>마지막 백업</h3>
+      <div class="last-backup-row"><span>이번 세션</span><strong id="last-backup-label">—</strong></div>
+      <button class="fbtn active" id="btn-manual-export" style="width:100%;display:flex;justify-content:center">⬇ 지금 JSON 다운로드</button>
+    </div>
+    <div class="backup-section">
+      <h3>복원</h3>
+      <label class="fbtn" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin:0">
+        ⬆ JSON 파일로 복원
+        <input type="file" id="import-file" accept=".json" style="display:none">
+      </label>
+    </div>
+    <div class="modal-btns"><button class="fbtn" id="backup-close">닫기</button></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span id="toast-icon"></span><span id="toast-msg"></span></div>
+
+<script>
+// ═══════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════
+const MEMBERS=['에스쿱스','정한','조슈아','준','호시','원우','우지','디에잇','민규','도겸','승관','버논','디노'];
+const K_ALBUMS='svt_al_v5';
+const K_POCAS ='svt_pc_v5'; // { pocaId: { alId, member, name, status, photo } }
+
+// ═══════════════════════════════
+//  STORAGE
+// ═══════════════════════════════
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+let albums = lsGet(K_ALBUMS, []);
+let pocas  = lsGet(K_POCAS,  {}); // pocaId -> { alId, member, name, status:'not'|'have', photo:base64|'' }
+
+// ═══════════════════════════════
+//  HELPERS
+// ═══════════════════════════════
+function genId(){ return 'p' + Date.now() + Math.random().toString(36).slice(2,6); }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d){ const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function fileStamp(d){ const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
+
+function pocasOfAlbum(alId){ return Object.entries(pocas).filter(([,p])=>p.alId===alId).map(([id,p])=>({id,...p})); }
+function pocasOfMemberInAlbum(alId,member){ return pocasOfAlbum(alId).filter(p=>p.member===member); }
+
+function countHave(){ return Object.values(pocas).filter(p=>p.status==='have').length; }
+function countTotal(){ return Object.keys(pocas).length; }
+
+// ═══════════════════════════════
+//  FILTERS
+// ═══════════════════════════════
+let filterMember='all', filterStatus='all', filterSearch='';
+
+// ═══════════════════════════════
+//  RENDER
+// ═══════════════════════════════
+function renderAll(){ renderMemberFilters(); renderMain(); updateStats(); }
+
+function renderMemberFilters(){
+  const wrap=document.getElementById('member-filters');
+  wrap.innerHTML='';
+  const mk=(label,val)=>{
+    const b=document.createElement('button');
+    b.className='fbtn'+(filterMember===val?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{ filterMember=val; renderAll(); };
+    wrap.appendChild(b);
+  };
+  mk('전체','all');
+  MEMBERS.forEach(m=>mk(m,m));
+}
+
+function pocaVisible(p){
+  if(filterMember!=='all' && p.member!==filterMember) return false;
+  if(filterSearch){
+    const q=filterSearch.toLowerCase();
+    if(!p.member.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q)) return false;
+  }
+  return true;
+}
+
+
+function renderMain(){
+  const main=document.getElementById('main');
+  main.innerHTML='';
+  if(!albums.length){
+    main.innerHTML='<div class="empty">아직 앨범이 없어요!<br><strong>+ 앨범 추가</strong>로 시작해 보세요 🎴</div>';
+    return;
+  }
+
+  albums.forEach(al=>{
+    const alPocas = pocasOfAlbum(al.id).filter(p=>pocaVisible(p));
+    const haveCount = alPocas.filter(p=>p.status==='have').length;
+
+    const sec=document.createElement('div');
+    sec.className='album-section';
+    sec.innerHTML=`
+      <div class="album-header" style="cursor:pointer">
+        <div class="album-title">${escHtml(al.name)}</div>
+        <div class="album-count"><strong>${haveCount}</strong> / ${alPocas.length}</div>
+      </div>
+      <div class="album-body" id="body-${al.id}"></div>
+    `;
+    main.appendChild(sec);
+
+    const body=sec.querySelector(`#body-${al.id}`);
+    const grid=document.createElement('div');
+    grid.className='card-grid';
+
+    alPocas.forEach(p=>grid.appendChild(buildCard(p)));
+
+    const add=document.createElement('div');
+    add.className='poca-add-card';
+    add.innerHTML=`<div class="add-icon">+</div><div class="add-label">포카 추가</div>`;
+    add.onclick=()=>openAddPocaModal(al.id, MEMBERS[0]);
+    grid.appendChild(add);
+
+    body.appendChild(grid);
+
+    const body=sec.querySelector(`#body-${al.id}`);
+    const arrow=sec.querySelector('.album-arrow');
+
+    arrow.onclick=()=>{
+      collapsed=!collapsed;
+      body.style.display=collapsed?'none':'block';
+      arrow.textContent = collapsed ? '⬆️' : '⬇️';
+    };
+  });
+}
+
+
+
+
+function buildCard(p){
+  const card=document.createElement('div');
+  card.className='poca-card'+(p.status==='have'?' have':'');
+
+  if(p.photo){
+    card.innerHTML=`
+      <img class="poca-img" src="${p.photo}" alt="" loading="lazy">
+    `;
+  } else {
+    card.innerHTML=`
+      <div class="poca-text-only">
+        <div>${escHtml(p.name||p.member)}</div>
+      </div>
+    `;
+  }
+
+  // 클릭하면 바로 소장 토글 (팝업 없음)
+  card.onclick=()=>{
+    p.status = p.status==='have' ? 'not' : 'have';
+    lsSet(K_POCAS,pocas);
+    renderAll();
+  };
+
+  return card;
+}
+
+
+
+function updateStats(){
+  const have=countHave(), total=countTotal();
+  document.getElementById('sn-have').textContent=have;
+  document.getElementById('sn-total').textContent=total;
+  const pct=total>0?Math.round(have/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+}
+
+// ═══════════════════════════════
+let ctxId=null;
+const ctxMenu=document.getElementById('ctx-menu');
+
+function showCtx(e, id, member, name){
+  e.stopPropagation();
+  ctxId=id;
+  document.getElementById('ctx-title').textContent=`${member}${name?' · '+name:''}`;
+  const st=pocas[id]?.status||'not';
+  ctxMenu.querySelectorAll('[data-action]').forEach(el=>el.classList.toggle('cur',el.dataset.action===st));
+  const x=Math.min(e.clientX,window.innerWidth-180), y=Math.min(e.clientY,window.innerHeight-160);
+  ctxMenu.style.left=x+'px'; ctxMenu.style.top=y+'px';
+  ctxMenu.classList.add('show');
+}
+ctxMenu.querySelectorAll('[data-action]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(!ctxId) return;
+    if(!pocas[ctxId]) return;
+    pocas[ctxId].status=btn.dataset.action;
+    lsSet(K_POCAS,pocas);
+    ctxMenu.classList.remove('show');
+    renderMain(); updateStats();
+  });
+});
+document.getElementById('ctx-delete').onclick=()=>{
+  if(!ctxId) return;
+  if(!confirm('이 포카를 삭제할까요?')) return;
+  delete pocas[ctxId];
+  lsSet(K_POCAS,pocas);
+  ctxMenu.classList.remove('show');
+  renderAll();
+};
+document.addEventListener('click',e=>{ if(!ctxMenu.contains(e.target)) ctxMenu.classList.remove('show'); });
+
+// ═══════════════════════════════
+//  FILTERS UI
+// ═══════════════════════════════
+document.querySelectorAll('[data-status]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    filterStatus=btn.dataset.status;
+    document.querySelectorAll('[data-status]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); renderMain();
+  });
+});
+document.getElementById('search-input').addEventListener('input',e=>{ filterSearch=e.target.value.trim(); renderMain(); });
+
+// ═══════════════════════════════
+//  ADD ALBUM MODAL
+// ═══════════════════════════════
+document.getElementById('btn-add-album').onclick=()=>{
+  document.getElementById('al-name').value='';
+  document.getElementById('al-type').value='';
+  document.getElementById('modal-album').classList.add('show');
+  setTimeout(()=>document.getElementById('al-name').focus(),80);
+};
+document.getElementById('modal-al-cancel').onclick=()=>document.getElementById('modal-album').classList.remove('show');
+document.getElementById('modal-al-save').onclick=()=>{
+  const name=document.getElementById('al-name').value.trim();
+  const type=document.getElementById('al-type').value.trim();
+  if(!name){ alert('앨범명을 입력해 주세요'); return; }
+  albums.push({id:'al'+Date.now(), name, type});
+  lsSet(K_ALBUMS,albums);
+  document.getElementById('modal-album').classList.remove('show');
+  renderAll();
+};
+document.getElementById('modal-album').addEventListener('click',e=>{ if(e.target===document.getElementById('modal-album')) document.getElementById('modal-album').classList.remove('show'); });
+
+function deleteAlbum(id){
+  if(!confirm('이 앨범을 삭제할까요?\n(등록된 포카도 모두 삭제됩니다)')) return;
+  albums=albums.filter(a=>a.id!==id);
+  Object.keys(pocas).filter(pid=>pocas[pid].alId===id).forEach(pid=>delete pocas[pid]);
+  lsSet(K_ALBUMS,albums); lsSet(K_POCAS,pocas);
+  renderAll();
+}
+
+// ═══════════════════════════════
+//  ADD POCA MODAL
+// ═══════════════════════════════
+let addPocaAlId=null, addPocaPhoto='';
+
+function openAddPocaModal(alId, member){
+  addPocaAlId=alId;
+  addPocaPhoto='';
+
+  // 멤버 select
+  const sel=document.getElementById('poca-member');
+  sel.innerHTML='';
+  MEMBERS.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m; opt.textContent=m;
+    if(m===member) opt.selected=true;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('poca-name').value='';
+  resetPhotoBox();
+  document.getElementById('modal-add-poca').classList.add('show');
+  setTimeout(()=>document.getElementById('poca-name').focus(),80);
+}
+
+function resetPhotoBox(){
+  addPocaPhoto='';
+  const box=document.getElementById('poca-photo-box');
+  box.classList.remove('has-img');
+  box.querySelector('img')?.remove();
+  box.querySelector('.upload-icon').style.display='';
+  box.querySelector('.upload-hint').style.display='';
+  document.getElementById('poca-photo-clear').style.display='none';
+}
+
+// 사진 선택
+document.getElementById('poca-photo-box').addEventListener('click',()=>{
+  document.getElementById('poca-photo-input').click();
+});
+document.getElementById('poca-photo-input').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    addPocaPhoto=ev.target.result;
+    const box=document.getElementById('poca-photo-box');
+    box.classList.add('has-img');
+    let img=box.querySelector('img');
+    if(!img){ img=document.createElement('img'); box.prepend(img); }
+    img.src=addPocaPhoto;
+    box.querySelector('.upload-icon').style.display='none';
+    box.querySelector('.upload-hint').style.display='none';
+    document.getElementById('poca-photo-clear').style.display='block';
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+});
+document.getElementById('poca-photo-clear').onclick=resetPhotoBox;
+
+document.getElementById('modal-poca-cancel').onclick=()=>document.getElementById('modal-add-poca').classList.remove('show');
+document.getElementById('modal-add-poca').addEventListener('click',e=>{ if(e.target===document.getElementById('modal-add-poca')) document.getElementById('modal-add-poca').classList.remove('show'); });
+
+document.getElementById('modal-poca-save').onclick=()=>{
+  const member=document.getElementById('poca-member').value;
+  const name=document.getElementById('poca-name').value.trim();
+  const id=genId();
+  pocas[id]={ alId:addPocaAlId, member, name, status:'not', photo:addPocaPhoto };
+  lsSet(K_POCAS,pocas);
+  document.getElementById('modal-add-poca').classList.remove('show');
+  renderAll();
+  showToast('✓','포카 추가됨');
+};
+
+// ═══════════════════════════════
+//  BACKUP
+// ═══════════════════════════════
+let lastBackupLabel='—';
+function exportJSON(silent=false){
+  if(!albums.length&&!Object.keys(pocas).length) return;
+  const now=new Date();
+  const data={albums,pocas,exportedAt:now.toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`svt-poca-${fileStamp(now)}.json`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  lastBackupLabel=fmtDate(now);
+  const el=document.getElementById('last-backup-label');
+  if(el) el.textContent=lastBackupLabel;
+  if(!silent) showToast('⬇','JSON 백업 완료');
+}
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.albums){showToast('⚠','올바른 파일이 아닙니다');return;}
+      if(!confirm('이 파일로 복원할까요?\n현재 데이터를 먼저 백업합니다.'))return;
+      exportJSON(true);
+      albums=data.albums||[]; pocas=data.pocas||{};
+      lsSet(K_ALBUMS,albums); lsSet(K_POCAS,pocas);
+      renderAll();
+      document.getElementById('modal-backup').classList.remove('show');
+      showToast('✓','복원 완료');
+    }catch(err){showToast('⚠','파일 오류: '+err.message);}
+  };
+  reader.readAsText(file);
+}
+document.getElementById('btn-backup-modal').onclick=()=>{
+  document.getElementById('last-backup-label').textContent=lastBackupLabel;
+  document.getElementById('modal-backup').classList.add('show');
+};
+document.getElementById('backup-close').onclick=()=>document.getElementById('modal-backup').classList.remove('show');
+document.getElementById('modal-backup').addEventListener('click',e=>{if(e.target===document.getElementById('modal-backup'))document.getElementById('modal-backup').classList.remove('show');});
+document.getElementById('btn-manual-export').onclick=()=>exportJSON(false);
+document.getElementById('import-file').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  importJSON(file); e.target.value='';
+});
+
+// ═══════════════════════════════
+//  RESET
+// ═══════════════════════════════
+document.getElementById('btn-reset').onclick=()=>{
+  if(confirm('모든 포카 정보를 초기화할까요?\n(앨범 목록은 유지됩니다)'))
+  { pocas={}; lsSet(K_POCAS,pocas); renderAll(); showToast('✓','초기화 완료'); }
+};
+
+// ═══════════════════════════════
+//  TOAST
+// ═══════════════════════════════
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ═══════════════════════════════
+//  INIT
+// ═══════════════════════════════
+renderAll();
+setTimeout(()=>exportJSON(true),1000);
+</script>
+</body>
+</html>
